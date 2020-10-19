@@ -1,7 +1,7 @@
 %{
 Connor Bramhall
 email: bramhalc@my.erau.edu
-date: 9/3/2020
+date: 9/21/2020
 EGR 115 - Section 15DB
 Assignment: Final Project V0.1
 Program Description: My final project will be a program that allows any
@@ -15,10 +15,14 @@ clear;
 clc;
 
 players = input('How many players are there?');
-colors = [1, 1];
+colors = ['000000'; '000000'];
 for setup = 1:players %set up random colors for GUI
     r = randi([0, 16777215]); %<SM:RANDGEN>
-    colors(setup) = dec2hex(r) %<SM:RANDUSE>
+    r = dec2hex(r);
+    for cloop = (strlength(r)+1):1:6
+        r(cloop) = '0';
+    end
+    colors(setup, :) = r; %<SM:RANDUSE>
 end
 boards = zeros(8, 4, players); %NOTE: ARRAY INDEXES START AT 1!!!
 for setup = 1:players %only king and rook set up for now
@@ -26,13 +30,13 @@ for setup = 1:players %only king and rook set up for now
     boards(1, 1, setup) = 3 + ((setup -1)*16); % Rook A's ID is 3;
 end
 kingsExist = players;
-while kingsExist >= 2 %<SM:ROP>
+while 1 %kingsExist >= 2 %<SM:ROP>
     for turn = 1:players
         %Todo : list available
         fprintf('player %d, what piece do you want to move? (give ID number)', turn);
         fprintf('\n(for now, try moving player 1''s king horizontally- its ID is 1.) ');
         mover = input('');
-        movesArray = possible(boards, mover); %<SM:BOP> 
+        movesArray = possible(boards, mover, players); %<SM:BOP> 
         [possMoves, ~] = size(movesArray); %Get number of possible moves
         for ind = 1:(possMoves-1) %<SM:NEST>
             fprintf(movesArray(ind, :));
