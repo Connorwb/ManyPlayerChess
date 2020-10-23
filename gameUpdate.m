@@ -2,7 +2,7 @@ function returnb = gameUpdate (boards, mover, newplace)
     col = 0;
     row = 0;
     iter = 0;
-    while (col == 0) || (isnan(col)) %this loop finds where the king is
+    while isempty(col) || (col == 0)  %this loop finds where the peice is
            iter = iter+1;
            [col, row] = find(boards(:,:,iter) == mover);
     end

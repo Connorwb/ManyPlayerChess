@@ -27,7 +27,8 @@ end
 boards = zeros(8, 4, players); %NOTE: ARRAY INDEXES START AT 1!!!
 for setup = 1:players %only king and rook set up for now
     boards(5, 1, setup) = 1 + ((setup -1)*16); % King's ID is 1
-    boards(1, 1, setup) = 3 + ((setup -1)*16); % Rook A's ID is 3;
+    boards(1, 1, setup) = 3 + ((setup -1)*16); % Rook A's ID is 3
+    boards(1, 1, setup) = 4 + ((setup -1)*16); % Rook B's ID is 4
 end
 kingsExist = players;
 while 1 %kingsExist >= 2 %<SM:ROP>

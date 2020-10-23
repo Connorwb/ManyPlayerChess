@@ -3,15 +3,16 @@
 function moves = possible(boards, mover, players)
     ableMoves = ['none';'none'];
     totalMoves = 0;
-    if mod(mover, 16) == 1 %king movement logic (todo:test)
-        iter = 0;
-        row = 0;
-        col = 0;
-        while (col == 0) || (isnan(col))  %<SM:BOP>
-           %this loop finds where the king is
-           iter = iter+1;
-           [col, row] = find(boards(:,:,iter) == 1);
-        end
+    pstart = floor(mover/16);
+    iter = 0;
+    row = 0;
+    col = 0; 
+    while isempty(col) || (col == 0) %<SM:BOP>
+       %this loop finds where the piece to move is
+       iter = iter+1;
+       [col, row] = find(boards(:,:,iter) == mover);
+    end
+    if mod(mover, 16) == 1 %king movement logic       
         if iter == 1 % think going clockwise
            diter = players;
         else
@@ -86,7 +87,80 @@ function moves = possible(boards, mover, players)
             ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(row+1)];
         end
     elseif (mod(mover, 16) == 4 || mod(mover, 16) == 3) %rook movement logic 
-        %todo
+        tcol = col;
+        while tcol > 1 && boards(tcol - 1, row, iter) == 0 %is the space to the left of the rook empty?
+            tcol = tcol - 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tcol-1)), num2str(row)];
+        end
+        if tcol > 1 && ~(pstart <= boards(tcol - 1, row, iter) && pstart + 15 >= boards(tcol - 1, row, iter))
+            %is the peice to the left of the rook the player's?
+            tcol = tcol - 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tcol-1)), num2str(row)];
+        end
+        tcol = col;
+        while tcol < 8 && boards(tcol + 1, row, iter) == 0 %is the space to the right of the rook empty?
+            tcol = tcol + 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tcol-1)), num2str(row)];
+        end
+        if tcol < 8 && ~(pstart <= boards(tcol + 1, row, iter) && pstart + 15 >= boards(tcol + 1, row, iter))
+            %is the peice to the left of the rook the player's?
+            tcol = tcol + 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tcol-1)), num2str(row)];
+        end
+        trow = row;
+        while trow > 1 && boards(col, trow - 1, iter) == 0 %is the space below the rook empty?
+            trow = trow - 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(trow)];
+        end
+        if trow > 1 && ~(pstart <= boards(col, trow - 1, iter) && pstart + 15 >= boards(col, trow - 1, iter))
+            %is the peice below the furthest the rook can go the player's?
+            trow = trow - 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(trow)];
+        end
+        trow = row;
+        while trow < 4 && boards(col, trow + 1, iter) == 0
+            trow = trow + 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(trow)];
+        end
+        if (trow < 4 || boards(col, 4, iter) ~= 0) && ~(pstart <= boards(col, trow - 1, iter) && pstart + 15 >= boards(col, trow - 1, iter)) 
+            trow = trow + 1;
+            totalMoves = totalMoves + 1;
+            ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(trow)];
+        else
+            oiter = 0;
+            if row > 4
+                if iter == 1
+                    oiter = players;
+                else
+                    oiter = iter - 1;
+                end
+            else
+                if iter == players
+                    oiter = 1;
+                else 
+                    oiter = iter + 1;
+                end
+            end
+            while trow > 1 && boards(col, trow, oiter) == 0
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(oiter), char('A'+(col-1)), num2str(trow)];
+                trow = trow - 1;
+            end
+            if trow > 0 && ~(pstart <= boards(col, trow, oiter) && pstart + 15 >= boards(col, trow, oiter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(oiter), char('A'+(col-1)), num2str(trow)];
+            end
+        end
+        %moving up
+    elseif mod(mover, 16) > 8  %pawn movement logic
+        
     end
     moves = ableMoves;
 end
