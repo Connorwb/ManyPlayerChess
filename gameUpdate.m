@@ -1,4 +1,4 @@
-function returnb = gameUpdate (boards, mover, newplace)
+function [returnb, pointGain, playerGain] = gameUpdate (boards, mover, newplace)
     col = 0;
     row = 0;
     iter = 0;
@@ -10,7 +10,10 @@ function returnb = gameUpdate (boards, mover, newplace)
     newcol = 1 + newplace(3) - 'A';
     newrow = newplace(4) - '0';
     newplayer = newplace(2) - '0';
+    pointGain = alphaZeroPoints(boards(newcol, newrow, newplayer));
     boards(newcol, newrow, newplayer) = mover; %out of bounds errors lead to HUGE memory changes. 
-    %todo: check bounds and throw errors if needed to prevent memory problems
+    %todo: check bounds and throw errors if needed to prevent memory
+    %problems
     returnb = boards;
+    playerGain = ceil(mover/16);
 end

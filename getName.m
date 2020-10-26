@@ -1,20 +1,27 @@
 function chessName = getName(x)
-    piece = mod(x,16);
-    switch piece
-        case 1
-            chessName = 'King';
-        case 2
-            chessName = 'Queen';
-        case 3 
-            chessName = 'Rook A';
-        case 4 
-            chessName = 'Rook B';
-        case 5
-            chessName = 'Black Bishop'; %Left Bishop
-        case 6
-            chessName = 'White Bishop'; %Right Bishop
-        otherwise
-            chessName = 'Invalid';
-            fprintf('Error 1: Bad piece ID');
+    if x == 0
+        chessName = '';
+    else
+        piece = mod(x,16);
+        switch piece
+            case 1
+                chessName = 'K';
+            case 2
+                chessName = 'Q';
+            case 3 
+                chessName = 'R';
+            case 4 
+                chessName = 'R';
+            case 5
+                chessName = 'B'; %Left Bishop
+            case 6
+                chessName = 'B'; %Right Bishop
+            case 7
+                chessName = 'K';
+            case 8
+                chessName = 'K';
+            otherwise
+                chessName = 'P';
+        end
     end
 end
