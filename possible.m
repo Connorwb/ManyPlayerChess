@@ -1,13 +1,14 @@
 %https://www.mathworks.com/matlabcentral/answers/41238-turning-numbers-into-letters-based-on-alphabetical-order
 %https://www.mathworks.com/matlabcentral/answers/2653-about-null-values
 function moves = possible(boards, mover, players)
+    %TODO : import promoted pawns
     ableMoves = ['none';'none'];
     totalMoves = 0;
     pstart = ((floor(mover/16))*16)+1;
     iter = 0;
     row = 0;
     col = 0; 
-    while isempty(col) || (col == 0) %<SM:BOP>
+    while isempty(col) || (col == 0) 
        %this loop finds where the piece to move is
        iter = iter+1;
        [col, row] = find(boards(:,:,iter) == mover);
@@ -103,7 +104,7 @@ function moves = possible(boards, mover, players)
             totalMoves = totalMoves + 1;
             ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(row+1)];
         end
-    elseif (mod(mover, 16) == 4 || mod(mover, 16) == 3) %rook movement logic 
+    elseif (mod(mover, 16) == 4 || mod(mover, 16) == 3) || mod(mover, 16) == 2%rook movement logic
         tcol = col;
         while tcol > 1 && boards(tcol - 1, row, iter) == 0 %is the space to the left of the rook empty?
             tcol = tcol - 1;
@@ -178,7 +179,135 @@ function moves = possible(boards, mover, players)
             end
         end
         %moving up
+    end
+    if mod(mover, 16) == 5 || mod(mover, 16) == 6 || mod(mover, 16) == 2 %bishop movement logic
+        if iter == 1 % think going clockwise
+           diter = players;
+        else
+           diter = iter -1;
+        end
+        if iter == players % think going counterclockwise
+            uiter = 1;
+        else
+            uiter = iter +1;
+        end
+        tempx = col;
+        tempy = row;
+        while tempx > 1 && tempy > 1 %can the bishop move southwest?
+            tempx = tempx - 1;
+            tempy = tempy - 1;
+            if boards(tempx, tempy, iter) == 0 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+            elseif ~(pstart <= boards(tempx, tempy, iter) && pstart + 15 >= boards(tempx, tempy, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+                tempx = 0;
+            else
+                tempx = 0;
+            end
+        end
+        tempx = col;
+        tempy = row;
+        while tempx < 8 && tempy > 1 %can the bishop move southeast?
+            tempx = tempx + 1;
+            tempy = tempy - 1;
+            if boards(tempx, tempy, iter) == 0 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+            elseif ~(pstart <= boards(tempx, tempy, iter) && pstart + 15 >= boards(tempx, tempy, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+                tempx = 9;
+            else 
+                tempx = 9;
+            end
+        end
+        tempx = col;
+        tempy = row;
+        while tempx < 8 && tempy < 4 %can the bishop move northeast?
+            tempx = tempx + 1;
+            tempy = tempy + 1;
+            if boards(tempx, tempy, iter) == 0 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+            elseif ~(pstart <= boards(tempx, tempy, iter) && pstart + 15 >= boards(tempx, tempy, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+                tempx = 9;
+            else 
+                tempx = 9;
+            end
+        end
+        if (8-col + row-1) > 3 && (8-col + row-1) < 8 && tempx ~= 9
+            tempx = 8-tempx;
+            tempy = 4;
+            if boards(tempx, tempy, uiter) == 0
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(tempx-1)), '4'];
+                while tempx > 1 && tempy > 1 %can the bishop move southwest on the other p's board?
+                tempx = tempx - 1;
+                tempy = tempy - 1;
+                    if boards(tempx, tempy, uiter) == 0 
+                        totalMoves = totalMoves + 1;
+                        ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(tempx-1)), num2str(tempy)];
+                    elseif ~(pstart <= boards(tempx, tempy, uiter) && pstart + 15 >= boards(tempx, tempy, uiter))
+                        totalMoves = totalMoves + 1;
+                        ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(tempx-1)), num2str(tempy)];
+                        tempx = 0;
+                    else
+                        tempx = 0;
+                    end
+                end
+            elseif ~(pstart <= boards(tempx, tempy, uiter) && pstart + 15 >= boards(tempx, tempy, uiter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(7-tempx)), '4'];
+            end
+        end
+        tempx = col;
+        tempy = row;
+        while tempx > 1 && tempy < 4 %can the bishop move northwest?
+            tempx = tempx - 1;
+            tempy = tempy + 1;
+            if boards(tempx, tempy, iter) == 0 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+            elseif ~(pstart <= boards(tempx, tempy, iter) && pstart + 15 >= boards(tempx, tempy, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(tempx-1)), num2str(tempy)];
+                tempx = 0;
+            else
+                tempx = 0;
+            end
+        end
+        if (col + row -2) > 3 && (col + row -2) < 8 && tempx ~= 9
+            tempx = 10-tempx;
+            tempy = 4;
+            if boards(tempx, tempy, diter) == 0
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(diter), char('A'+(tempx-1)), '4'];
+                while tempx > 1 && tempy > 1 %can the bishop move southeast on the other p's board?
+                tempx = tempx + 1;
+                tempy = tempy - 1;
+                    if boards(tempx, tempy, diter) == 0 
+                        totalMoves = totalMoves + 1;
+                        ableMoves(totalMoves, :) = ['P', num2str(diter), char('A'+(tempx-1)), num2str(tempy)];
+                    elseif ~(pstart <= boards(tempx, tempy, diter) && pstart + 15 >= boards(tempx, tempy, diter))
+                        totalMoves = totalMoves + 1;
+                        ableMoves(totalMoves, :) = ['P', num2str(diter), char('A'+(tempx-1)), num2str(tempy)];
+                        tempx = 0;
+                    else
+                        tempx = 0;
+                    end
+                end
+            elseif ~(pstart <= boards(tempx, tempy, diter) && pstart + 15 >= boards(tempx, tempy, diter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(diter), char('A'+(9-tempx)), '4'];
+            end
+        end
     elseif mod(mover, 16) > 8 || mod(mover, 16) == 0 %pawn movement logic
+        %TODO: Check if the pawn has been made a queen. Make queen movement
+        %a function? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if iter == ceil((mover)/16)
             if  row == 2
                 if boards(col, row+1, iter) == 0
@@ -188,12 +317,7 @@ function moves = possible(boards, mover, players)
                         totalMoves = totalMoves + 1;
                         ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(row+2)];
                     end
-                end
-                if 0 %can the pawn en passant?
-                    %TODO~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    %maybe leave "residue" after a pawn double moves, like -1.
-                    %will have to account for how that effects queen/rook/bishop
-                end
+                end                
             else
                 if row == 3
                     if boards(col, row+1, iter) == 0
@@ -226,7 +350,148 @@ function moves = possible(boards, mover, players)
                 totalMoves = totalMoves + 1;
                 ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-1)), num2str(row-1)];
             end
+            if 0 %can the pawn en passant?
+                    %TODO~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    %maybe leave "residue" after a pawn double moves, like -1.
+                    %will have to account for how that effects queen/rook/bishop
+            end
         end
+    elseif mod(mover, 16) == 6 || mod(mover, 16) == 7 % knight movement logic
+        if row > 1 %can the knight move backwards?
+            if col > 2 && ~(pstart <= boards(col-2, row-1, iter) && pstart + 15 >= boards(col-2, row-1, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-3)), num2str(row-1)];
+            end
+            if col < 7 && ~(pstart <= boards(col+2, row-1, iter) && pstart + 15 >= boards(col+2, row-1, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col+1)), num2str(row-1)];
+            end
+            if row > 2 %can the knight move 2 spaces backwards?
+                if col > 2 && ~(pstart <= boards(col-1, row-2, iter) && pstart + 15 >= boards(col-1, row-2, iter))
+                    totalMoves = totalMoves + 1;
+                    ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-2)), num2str(row-2)];
+                end
+                if col < 7 && ~(pstart <= boards(col+1, row-2, iter) && pstart + 15 >= boards(col+1, row-2, iter))
+                    totalMoves = totalMoves + 1;
+                    ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col)), num2str(row-2)];
+                end
+            end
+        end
+        if row > 3
+            if iter == 1 % think going clockwise
+               diter = players;
+            else
+               diter = iter -1;
+            end
+            if iter == players % think going counterclockwise
+                uiter = 1;
+            else
+                uiter = iter +1;
+            end
+            if col > 4 
+                %up 1 left 2
+                %up 2 left 1
+                if col < 7
+                    %up 2 right 1
+                    %up 1 right 2
+                elseif col < 8
+                    %up 2 right 1
+                end
+                if col == 5 || col == 6
+                    if col == 5
+                        %left 1 up 2
+                        %left 2 up 1
+                    end
+                end
+            else 
+                %up 1 right 2
+                %up 2 right 1
+                if col > 2
+                    %up 2 left 1
+                    %up 1 left 2
+                elseif col > 1
+                    %up 2  right 1
+                end
+                if col == 3 || col == 4
+                    if col == 4
+                        %right 1 up 2
+                        %right 2 up 1
+                    end
+                end
+            end
+        elseif row > 2
+            if iter == 1 % think going clockwise
+               diter = players;
+            else
+               diter = iter -1;
+            end
+            if iter == players % think going counterclockwise
+                uiter = 1;
+            else
+                uiter = iter +1;
+            end
+            if col > 4 
+                if col < 8 && ~(pstart <= boards(8-col, '4', uiter) && pstart + 15 >= boards(8-col, '4', uiter))
+                %up 2 right 1
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(7-col)), '4'];
+                end
+                if col == 5
+                    if ~(pstart <= boards(5, 4, uiter) && pstart + 15 >= boards(5, 4, uiter))
+                    %up 2 left 1
+                    totalMoves = totalMoves + 1;
+                    ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(9-col)), '4'];
+                    end
+                    if ~(pstart <= boards(4, 4, diter) && pstart + 15 >= boards(4, 4, diter))
+                        %left 1 up 2
+                        totalMoves = totalMoves + 1;
+                        ableMoves(totalMoves, :) = ['P', num2str(diter), char('A'+(col)), '4'];
+                    end
+                else
+                    if col < 8 && ~(pstart <= boards(10-col, 4, uiter) && pstart + 15 >= boards(10-col, 4, uiter))
+                    %up 2 left 1
+                    totalMoves = totalMoves + 1;
+                    ableMoves(totalMoves, :) = ['P', num2str(uiter), char('A'+(9-col)), '4'];
+                    end
+                end
+            else
+                'remove this' %Left side of the board
+            end
+            if col < 7 && ~(pstart <= boards(col+2, row+1, iter) && pstart + 15 >= boards(col+2, row+1, iter))
+                %up 1 right 2
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col+1)), num2str(row+1)];
+            end
+            if col > 2 && ~(pstart <= boards(col-2, row+1, iter) && pstart + 15 >= boards(col-2, row+1, iter))
+                %up 1 left 2 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-3)), num2str(row+1)];
+            end
+        else
+            if col < 8 && ~(pstart <= boards(col+1, row+2, iter) && pstart + 15 >= boards(col+1, row+2, iter))
+                %up 2 right 1
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col)), num2str(row+2)];
+            end
+            if col < 7 && ~(pstart <= boards(col+2, row+1, iter) && pstart + 15 >= boards(col+2, row+1, iter))
+                %up 1 right 2
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col+1)), num2str(row+1)];
+            end
+            if col > 1 && ~(pstart <= boards(col-1, row+2, iter) && pstart + 15 >= boards(col-1, row+2, iter))
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-2)), num2str(row+2)];
+                %up 2 left 1
+            end    
+            if col > 2 && ~(pstart <= boards(col-2, row+1, iter) && pstart + 15 >= boards(col-2, row+1, iter))
+                %up 1 left 2 
+                totalMoves = totalMoves + 1;
+                ableMoves(totalMoves, :) = ['P', num2str(iter), char('A'+(col-3)), num2str(row+1)];
+            end
+        end
+    end
+    if strcmpi('none', ableMoves(2,:))
+        ableMoves(2, :) = [];
     end
     moves = ableMoves;
 end

@@ -17,9 +17,9 @@ function chessName = getName(x)
             case 6
                 chessName = 'B'; %Right Bishop
             case 7
-                chessName = 'K';
+                chessName = 'H';
             case 8
-                chessName = 'K';
+                chessName = 'H';
             otherwise
                 chessName = 'P';
         end
