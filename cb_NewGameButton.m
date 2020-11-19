@@ -1,4 +1,3 @@
 function cb_NewGameButton(H, K, edit_box)
-    data = struct('choice', 1);
-    H.UserData = data;
+    playGame(1, edit_box)
 end
