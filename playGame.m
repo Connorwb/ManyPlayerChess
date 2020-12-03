@@ -60,8 +60,11 @@ function playGame(choice, closebox, players)
         end %Replacing the arrays with objects would allow for more variability.
     end
     
-    bpointer = libpointer('voidPtr',boards);%pointer to get around annoying GUI problems.
+    bpointer(1) = libpointer('voidPtr',boards(:,:,1));%pointer to get around annoying GUI problems.
     %hopefully this doesn't count as a global variable
+    for n = 2:1:players
+        bpointer(n) = libpointer('voidPtr', boards(:,:,n));
+    end
     
     points = zeros([1, players]);
     ppointer = libpointer('voidPtr',points);
@@ -98,30 +101,36 @@ function playGame(choice, closebox, players)
                 buttons{x,y,n} = uicontrol('Style','PushButton','enable','off','visible','off','Cdata',buttonPic,'units','normalized',...
                     'String',['P',num2str(n),'A' + x - 1,num2str(y)],'Position',[xbound+((x-1)*((1)/(8*dimensionsx))),ybound+((y-1)*(1/(4*dimensionsy))),...
                     butsizex, butsizey]);
-                if bpointer.Value(x, y, n) ~= 0
-                    if mod(bpointer.Value(x, y, n), 16) == 1
+                if bpointer(n).Value(x, y) ~= 0
+                    if mod(bpointer(n).Value(x, y), 16) == 1
                         imgts = imread('King.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]); %<SM:NEWFUN>
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
-                    elseif mod(bpointer.Value(x, y, n), 16) == 2
+                    elseif mod(bpointer(n).Value(x, y), 16) == 2
                         imgts = imread('Queen.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]);
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
-                    elseif mod(bpointer.Value(x, y, n), 16) == 4 || mod(bpointer.Value(x, y, n), 16) == 3
+                    elseif mod(bpointer(n).Value(x, y), 16) == 4 || mod(bpointer(n).Value(x, y), 16) == 3
                         imgts = imread('Rook.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]);
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
-                    elseif mod(bpointer.Value(x, y, n), 16) == 5 || mod(bpointer.Value(x, y, n), 16) == 6
+                    elseif mod(bpointer(n).Value(x, y), 16) == 5 || mod(bpointer(n).Value(x, y), 16) == 6
                         imgts = imread('Bishop.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]);
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
-                    elseif mod(bpointer.Value(x, y, n), 16) >  8 || mod(bpointer.Value(x, y, n), 16) == 0
+                    elseif mod(bpointer(n).Value(x, y), 16) >  8 || mod(bpointer(n).Value(x, y), 16) == 0
                         imgts = imread('Pawn.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]);
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
-                    elseif mod(bpointer.Value(x, y, n), 16) == 8 || mod(bpointer.Value(x, y, n), 16) == 7
+                    elseif mod(bpointer(n).Value(x, y), 16) == 8 || mod(bpointer(n).Value(x, y), 16) == 7
                         imgts = imread('Knight.png');
                         imgts = imresize(imgts, [butsizex*scrsz(3), butsizey*scrsz(4)]);
+                        imgts = myrecolor(imgts, colors(n,:));
                         set(buttons{x, y, n}, 'Cdata', imgts, 'Visible', 'on');
                     end
                 end
@@ -131,25 +140,25 @@ function playGame(choice, closebox, players)
     for n = 1:1:players %Not sure if this loop outside the main nest is needed, but helps with debugging.
         for x = 1:1:8 %relocate after saving
             for y = 1:1:4
-                set(buttons{x, y, n}, 'Callback',{@ValidQuery, bpointer.Value, players, buttons});
+                set(buttons{x, y, n}, 'Callback',{@ValidQuery, bpointer, players, buttons, ppointer}); %bookmark
             end
         end
     end
     for x = 1:1:8
         for y = 1:1:4
-            if bpointer.Value(x, y, 1) ~= 0
+            if bpointer(1).Value(x, y) ~= 0
                 set(buttons{x, y, 1}, 'enable', 'on');
             end
         end
     end
 end
 
-function ValidQuery(H,E, boards, players, buttons)
+function ValidQuery(H,E, boards, players, buttons, ppointer)
     thiscol = H.String(3)-'A'+1;
     thisrow = str2double(H.String(4));
     thisplay = str2double(H.String(2));
-    mover = boards.Value(thiscol, thisrow, thisplay);
-    possarray = possible(boards.Value, mover, players);
+    mover = boards(thisplay).Value(thiscol, thisrow);
+    possarray = possible(boards, mover, players);
     if (~strcmpi(possarray(1, 1:4), 'none'))
         turnonbut = zeros([3, size(possarray, 1)]);
         for n = 1:1:players
@@ -176,6 +185,12 @@ function ValidQuery(H,E, boards, players, buttons)
 end
 function myuiresume(H, E)
     uiresume();
+end
+function retimage = myrecolor(inpimage, colors)
+    for nn = 1:1:3
+        inpimage(:,:,nn) = inpimage(:,:,nn) * colors(nn);
+    end
+    retimage = inpimage;
 end
 %{    
     

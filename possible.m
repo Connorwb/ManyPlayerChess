@@ -1,7 +1,11 @@
 %https://www.mathworks.com/matlabcentral/answers/41238-turning-numbers-into-letters-based-on-alphabetical-order
 %https://www.mathworks.com/matlabcentral/answers/2653-about-null-values
-function moves = possible(boards, mover, players)
+function moves = possible(lazyport, mover, players)
     %TODO : import promoted pawns
+    boards = zeros([8,4,players]);
+    for n = 1:1:players
+        boards(:,:,n) = lazyport(n).Value(:,:);
+    end
     ableMoves = ['none';'none'];
     totalMoves = 0;
     pstart = ((floor(mover/16))*16)+1;
@@ -11,7 +15,7 @@ function moves = possible(boards, mover, players)
     while isempty(col) || (col == 0) 
        %this loop finds where the piece to move is
        iter = iter+1;
-       [col, row] = find(boards(:,:,iter) == mover);
+       [col, row] = find(boards(:,:,iter) == mover);   
     end
     if mod(mover, 16) == 1 %king movement logic       
         if iter == 1 % think going clockwise
