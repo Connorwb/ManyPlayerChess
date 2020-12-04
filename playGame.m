@@ -80,7 +80,6 @@ function playGame(choice, closebox, players)
             supercolors(1+n+((setup-1)*16), :) = colors(setup, :); %<SM:SLICE>
         end
     end
-    kingsExist = players;
     dimensionsx = 3;
     dimensionsy = 4;
     buttonPic = imread('Selector.png');
@@ -151,6 +150,9 @@ function playGame(choice, closebox, players)
             end
         end
     end
+    %
+    %save button here
+    %
 end
 
 function ValidQuery(H,E, boards, players, buttons, ppointer)
@@ -159,8 +161,8 @@ function ValidQuery(H,E, boards, players, buttons, ppointer)
     thisplay = str2double(H.String(2));
     mover = boards(thisplay).Value(thiscol, thisrow);
     possarray = possible(boards, mover, players);
+    turnonbut = zeros([3, size(possarray, 1)]);
     if (~strcmpi(possarray(1, 1:4), 'none'))
-        turnonbut = zeros([3, size(possarray, 1)]);
         for n = 1:1:players
             for x = 1:1:8
                 for y = 1:1:4
@@ -181,7 +183,57 @@ function ValidQuery(H,E, boards, players, buttons, ppointer)
     else
         set(buttons{thiscol,thisrow,thisplay}, 'enable', 'off');
     end
-    uiwait(); %pause till the go-ahead is given after a button is pressed or they take too long
+    uiwait(); %pause till the go-ahead is given after a button is pressed
+    buttonSelPic = imread('Selector.png');
+    set(buttons{thiscol,thisrow,thisplay}, 'visible', 'off', 'enable', 'off', 'enable', 'off',...
+        'Callback', {});
+    for n = 1:1:size(turnonbut,2)
+        if (buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}.CData(24, 21, 1) == buttonSelPic(24, 21, 1) && buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}.CData(24, 21, 3) == buttonSelPic(24, 21, 3))
+            set(buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}, 'visible', 'off', 'enable', 'off',...
+                'Callback', {});
+        else
+            set(buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}, 'Callback', {@ValidQuery, boards, players, buttons, ppointer});
+        end
+    end
+    passTurn(buttons, players, boards);
+end
+function passTurn(buttons, players, bpointer)
+    %
+    % Check how many kings exist
+    %
+    yourTurn = 0;
+    tester = 0;
+    truecoords = zeros([1,3]);
+    while truecoords(1) == 0
+        tester = tester +1;
+        for x = 1:1:8
+            for y = 1:1:4
+                if strcmpi(buttons{x,y,tester}.Enable, 'on')
+                    truecoords = [x,y,tester];
+                end
+            end
+        end
+    end
+    yourTurn = ceil((bpointer(truecoords(3)).Value(truecoords(1), truecoords(2)))/16);
+    if yourTurn == players
+        yourTurn = 1;
+    else
+        yourTurn = yourTurn + 1;
+    end
+    %
+    %use bpointer stuff! glitches. 
+    %
+    for x = 1:1:8
+        for y = 1:1:4
+            if bpointer(yourTurn).Value(x, y) ~= 0
+                set(buttons{x, y, yourTurn}, 'enable', 'on');
+            end
+        end
+    end
+    set(buttons{truecoords(1), truecoords(2), truecoords(3)}, 'visible', 'on', 'enable', 'off');
+    %
+    %pie graph here
+    %
 end
 function myuiresume(H, E)
     uiresume();

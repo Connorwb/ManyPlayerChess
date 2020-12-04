@@ -13,6 +13,9 @@ function gameUpdate (H, E, boards, mover, newplace, frombut, tobut, ppointer)
     pointGain = alphaZeroPoints(boards(newplayer).Value(newcol, newrow));
     boards(newplayer).Value(newcol, newrow) = mover; %out of bounds errors lead to HUGE memory changes. 
     playerGain = ceil(mover/16);
-    ppointer.Value(playerGain) = ppointer.Value(playerGain) + pointgain;
+    ppointer.Value(playerGain) = ppointer.Value(playerGain) + pointGain;
+    buttonPic = imread('Selector.png');
+    set(tobut, 'Cdata', frombut.CData);
+    set(frombut, 'Cdata', buttonPic);
     uiresume();
 end

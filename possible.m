@@ -1,7 +1,10 @@
 %https://www.mathworks.com/matlabcentral/answers/41238-turning-numbers-into-letters-based-on-alphabetical-order
 %https://www.mathworks.com/matlabcentral/answers/2653-about-null-values
 function moves = possible(lazyport, mover, players)
-    %TODO : import promoted pawns
+    %TODO : import and use promoted pawns
+    %TODO : Castling
+    %TODO : en passant
+    %TODO : fix the Knight
     boards = zeros([8,4,players]);
     for n = 1:1:players
         boards(:,:,n) = lazyport(n).Value(:,:);
@@ -360,7 +363,7 @@ function moves = possible(lazyport, mover, players)
                     %will have to account for how that effects queen/rook/bishop
             end
         end
-    elseif mod(mover, 16) == 6 || mod(mover, 16) == 7 % knight movement logic
+    elseif mod(mover, 16) == 8 || mod(mover, 16) == 7 % knight movement logic
         if row > 1 %can the knight move backwards?
             if col > 2 && ~(pstart <= boards(col-2, row-1, iter) && pstart + 15 >= boards(col-2, row-1, iter))
                 totalMoves = totalMoves + 1;
