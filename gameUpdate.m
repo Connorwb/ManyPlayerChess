@@ -17,5 +17,10 @@ function gameUpdate (H, E, boards, mover, newplace, frombut, tobut, ppointer)
     buttonPic = imread('Selector.png');
     set(tobut, 'Cdata', frombut.CData);
     set(frombut, 'Cdata', buttonPic);
+    %{
+    if ~isequal(tobut.String, frombut.String)
+        set(frombut, 'visible', 'off');
+    end
+    %}
     uiresume();
 end

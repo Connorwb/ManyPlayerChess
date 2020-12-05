@@ -3,11 +3,31 @@ Connor Bramhall
 email: bramhalc@my.erau.edu
 date: 11/16/2020
 EGR 115 - Section 15DB
-Assignment: Final Project V0.3.1
+Assignment: Final Project V0.4.0
 Program Description: My final project will be a program that allows any
 number of people to play chess with a custom GUI. Due to the reshuffling of 
 my code, the scoring markers are below, with a reference to where they are 
 in the code.
+<SM:IF>
+<SM:SWITCH>
+<SM:ROP>
+<SM:BOP>
+<SM:FOR>
+<SM:WHILE>
+<SM:NEST>
+<SM:PDF_CALL>
+<SM:PDF_PARAM>
+<SM:PDF_RETURN>
+<SM:STRING>
+<SM:REF>
+<SM:SLICE>
+<SM:RTOTAL>
+<SM:RANDGEN>
+<SM:RANDUSE>
+<SM:PLOT>
+<SM:READ>
+<SM:WRITE>
+<SM:NEWFUN>
 Worked With: Online references are commented at the start of function
 files, or below here if they were used in the main script.
 https://www.mathworks.com/matlabcentral/answers/515880-how-can-i-change-the-colours-of-segmentation-on-a-chart-pie

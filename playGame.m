@@ -11,6 +11,7 @@ function playGame(choice, closebox, players)
         %promotedPawns are on the first page - it will be read/wrote differently
         [filename, mypath] = uigetfile('.xlsx'); %<SM:READ>
         filename = [mypath, filename];
+        set(mainboard, 'Name', 'Loading...');
         boards(:, :, 1) = xlsread(filename, 1);
         [~, sheets] = xlsfinfo(filename);
         players = size(sheets, 2);
@@ -74,12 +75,15 @@ function playGame(choice, closebox, players)
         r = rand([1,3]); %<SM:RANDGEN>
         colors(setup, :) = r; %<SM:AUG>
     end
+    colororder(mainboard, colors);
+    %{
     supercolors = ones([(players*16)+1, 3]);
     for setup = 1:players
         for n = 1:1:16
             supercolors(1+n+((setup-1)*16), :) = colors(setup, :); %<SM:SLICE>
         end
     end
+    %}
     dimensionsx = 3;
     dimensionsy = 4;
     buttonPic = imread('Selector.png');
@@ -150,9 +154,10 @@ function playGame(choice, closebox, players)
             end
         end
     end
-    %
-    %save button here
-    %
+    savebut = uicontrol('Style', 'PushButton', 'Units', 'Normalized');
+    set(savebut, 'Position', [0.9, 0.9, 0.08, 0.08], 'String', 'Save Game');
+    set(savebut, 'Callback', {@saveGame, bpointer, players});
+    set(mainboard, 'Name', 'Infinichess');
 end
 
 function ValidQuery(H,E, boards, players, buttons, ppointer)
@@ -185,8 +190,7 @@ function ValidQuery(H,E, boards, players, buttons, ppointer)
     end
     uiwait(); %pause till the go-ahead is given after a button is pressed
     buttonSelPic = imread('Selector.png');
-    set(buttons{thiscol,thisrow,thisplay}, 'visible', 'off', 'enable', 'off', 'enable', 'off',...
-        'Callback', {});
+    set(buttons{thiscol,thisrow,thisplay}, 'visible', 'off', 'enable', 'on', 'Callback', {});
     for n = 1:1:size(turnonbut,2)
         if (buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}.CData(24, 21, 1) == buttonSelPic(24, 21, 1) && buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}.CData(24, 21, 3) == buttonSelPic(24, 21, 3))
             set(buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}, 'visible', 'off', 'enable', 'off',...
@@ -195,45 +199,66 @@ function ValidQuery(H,E, boards, players, buttons, ppointer)
             set(buttons{turnonbut(1,n), turnonbut(2,n), turnonbut(3,n)}, 'Callback', {@ValidQuery, boards, players, buttons, ppointer});
         end
     end
-    passTurn(buttons, players, boards);
+    resetOption = 0;
+    if boards(thisplay).Value(thiscol, thisrow) == mover
+        resetOption = 1;
+    end
+    passTurn(buttons, players, boards, resetOption, ppointer);
 end
-function passTurn(buttons, players, bpointer)
-    %
-    % Check how many kings exist
-    %
-    yourTurn = 0;
-    tester = 0;
-    truecoords = zeros([1,3]);
-    while truecoords(1) == 0
-        tester = tester +1;
+function passTurn(buttons, players, bpointer, resetOption, ppointer)
+    kingsExist = 0;
+    for n = 1:1:players
         for x = 1:1:8
             for y = 1:1:4
-                if strcmpi(buttons{x,y,tester}.Enable, 'on')
-                    truecoords = [x,y,tester];
+                if mod(bpointer(n).Value(x, y),16) == 1
+                    kingsExist = kingsExist + 1;
                 end
             end
         end
     end
-    yourTurn = ceil((bpointer(truecoords(3)).Value(truecoords(1), truecoords(2)))/16);
-    if yourTurn == players
-        yourTurn = 1;
-    else
-        yourTurn = yourTurn + 1;
-    end
-    %
-    %use bpointer stuff! glitches. 
-    %
-    for x = 1:1:8
-        for y = 1:1:4
-            if bpointer(yourTurn).Value(x, y) ~= 0
-                set(buttons{x, y, yourTurn}, 'enable', 'on');
+    if kingsExist > 1
+        tester = 0;
+        truecoords = zeros([1,3]);
+        while truecoords(1) == 0
+            tester = tester +1;
+            for x = 1:1:8
+                for y = 1:1:4
+                    if strcmpi(buttons{x,y,tester}.Enable, 'on')
+                        truecoords = [x,y,tester];
+                    end
+                end
             end
         end
+        yourTurn = ceil((bpointer(truecoords(3)).Value(truecoords(1), truecoords(2)))/16);
+        if ~resetOption %did the player click on the same peice they selected?
+            if yourTurn == players
+                yourTurn = 1;
+            elseif yourTurn == 0
+                yourTurn = 1; %Weird, weird bug that I can't figure out. This corrects the bug but I can
+                %easily see this breaking with other edge cases.
+            else
+                yourTurn = yourTurn + 1;
+            end
+        end
+        for n = 1:1:players
+            for x = 1:1:8
+               for y = 1:1:4
+                   if ceil(bpointer(yourTurn).Value(x, y)/16) == yourTurn 
+                       set(buttons{x, y, yourTurn}, 'enable', 'on');
+                   end
+               end
+            end
+        end
+        set(buttons{truecoords(1), truecoords(2), truecoords(3)}, 'enable', 'off');
+    else
+        savebut = uicontrol('Style', 'PushButton', 'Units', 'Normalized');
+        set(savebut, 'Position', [0.9, 0.9, 0.08, 0.08], 'String', 'Game Over');
+        set(savebut, 'Callback', {@saveGame, bpointer, players});
     end
-    set(buttons{truecoords(1), truecoords(2), truecoords(3)}, 'visible', 'on', 'enable', 'off');
-    %
-    %pie graph here
-    %
+    if sum(ppointer.Value) > 0
+        subplot(4, 3, 1);
+        piegraph = pie(ppointer.Value); %<SM:PLOT>
+    end
 end
 function myuiresume(H, E)
     uiresume();
@@ -244,6 +269,13 @@ function retimage = myrecolor(inpimage, colors)
     end
     retimage = inpimage;
 end
+function saveGame(H, E, bpointer, players)
+    for n = 1:1:players
+        xlswrite('SavedChessGame',bpointer(n).Value,n);
+    end
+    close all;
+end
+
 %{    
     
     while kingsExist >= 2 %<SM:ROP> %<SM:WHILE>
